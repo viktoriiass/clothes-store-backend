@@ -6,10 +6,14 @@ const cors     = require('cors');
 const path     = require('path');
 const mongoose = require('mongoose');
 
+
+
 const itemsRouter  = require('./routes/items');
 const basketRouter = require('./routes/basket');
 
 const app = express();
+
+app.use(express.urlencoded({ extended: true }));
 
 // ——— MongoDB Connection ———
 mongoose

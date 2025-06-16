@@ -1,14 +1,12 @@
-// routes/items.js
 const express = require('express');
 const multer  = require('multer');
 const path    = require('path');
-
 const {
   getAllItems,
   getItemById,
   addItem,
   updateItem,
-  deleteItem
+  deleteItem,
 } = require('../controllers/itemsController');
 
 const router = express.Router();
@@ -16,7 +14,7 @@ const router = express.Router();
 // Multer setup for image uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename:    (req, file, cb) => {
+  filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
     cb(null, Date.now() + ext);
   }
@@ -45,7 +43,7 @@ router.put('/:id', upload.single('image'), (req, res, next) => {
   updateItem(req, res, next);
 });
 
-// DELETE an item
+// DELETE one item
 router.delete('/:id', deleteItem);
 
 module.exports = router;

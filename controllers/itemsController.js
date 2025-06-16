@@ -1,5 +1,9 @@
 // controllers/itemsController.js
 const Item = require('../models/Item');
+const BasketItem = require('../models/BasketItem');
+const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
 
 // GET /api/items
 exports.getAllItems = async (req, res, next) => {
@@ -73,14 +77,53 @@ exports.updateItem = async (req, res, next) => {
     next(err);
   }
 };
-
 // DELETE /api/items/:id
 exports.deleteItem = async (req, res, next) => {
   try {
-    const deleted = await Item.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ error: 'Item not found' });
-    res.status(204).end();
+    const id = req.params.id;
+    console.log('START DELETE: item ID =', id);
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      console.log('INVALID OBJECT ID');
+      return res.status(400).json({ error: 'Invalid item ID' });
+    }
+
+    const item = await Item.findById(id);
+    if (!item) {
+      console.log('ITEM NOT FOUND IN DB');
+      return res.status(404).json({ error: 'Item not found' });
+    }
+
+    console.log('ITEM FOUND:', item.name);
+
+    if (item.image) {
+      const fileName = item.image.split('/').pop();
+      const filePath = path.join(__dirname, '..', 'uploads', fileName);
+
+      fs.access(filePath, fs.constants.F_OK, (err) => {
+        if (!err) {
+          fs.unlink(filePath, (err) => {
+            if (err) console.error('Failed to delete image file:', err);
+            else console.log('Deleted image file:', filePath);
+          });
+        } else {
+          console.warn('Image file not found on server:', filePath);
+        }
+      });
+    }
+
+    await Item.findByIdAndDelete(id);
+    console.log('ITEM DELETED FROM COLLECTION');
+
+    const result = await BasketItem.deleteMany({ item: id });
+    console.log(`BASKET ENTRIES DELETED: ${result.deletedCount}`);
+
+    res.status(200).json({ message: 'Item and basket entries deleted successfully' });
+
   } catch (err) {
-    next(err);
+    console.error('FAILED TO DELETE ITEM:', err);
+    res.status(500).json({ error: 'Server error during deletion' });
   }
 };
+
+
