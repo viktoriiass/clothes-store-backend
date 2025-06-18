@@ -1,24 +1,32 @@
 const express = require('express');
 const router = express.Router();
 
-
 const {
   getBasket,
   addToBasket,
   deleteFromBasket,
   updateBasketQuantity
 } = require('../controllers/basketController');
-
-// GET all items in basket
+//socket.io connection-real time updates
+//GET
 router.get('/', getBasket);
 
-// POST to add item to basket
-router.post('/', addToBasket);
+//POST
+router.post('/', (req, res, next) => {
+  req.io = req.app.get('io'); //socket.io  connection
+  addToBasket(req, res, next);
+});
 
-// DELETE specific item (by id and optional size)
-router.delete('/:id', deleteFromBasket);
+//DELETE
+router.delete('/:id', (req, res, next) => {
+  req.io = req.app.get('io'); //socket.io connection
+  deleteFromBasket(req, res, next);
+});
 
-// PUT to update item quantity  in basket
-router.put('/:id', updateBasketQuantity);
+//PUT
+router.put('/:id', (req, res, next) => {
+  req.io = req.app.get('io');//socket.io connection
+  updateBasketQuantity(req, res, next);
+});
 
 module.exports = router;

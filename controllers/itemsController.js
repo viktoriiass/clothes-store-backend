@@ -27,6 +27,7 @@ exports.getItemById = async (req, res, next) => {
 };
 
 // POST /api/items
+// POST /api/items
 exports.addItem = async (req, res, next) => {
   try {
     const { name, description, price, category, size, image } = req.body;
@@ -37,6 +38,7 @@ exports.addItem = async (req, res, next) => {
     if (isNaN(numericPrice)) {
       return res.status(400).json({ error: "Field 'price' must be a number" });
     }
+
     const newItem = await Item.create({
       name:        name.trim(),
       description: (description || '').trim(),
@@ -46,6 +48,12 @@ exports.addItem = async (req, res, next) => {
       image:       image || '',
       addedAt:     new Date()
     });
+
+    // 🔥 отправляем событие socket.io
+    if (req.io) {
+      req.io.emit('inventoryUpdated', newItem);
+    }
+
     res.status(201).json(newItem);
   } catch (err) {
     if (err.name === 'ValidationError') {
@@ -113,10 +121,17 @@ exports.deleteItem = async (req, res, next) => {
     }
 
     await Item.findByIdAndDelete(id);
+    if (req.io) {
+      req.io.emit('inventoryDeleted', { itemId: id });
+    }
     console.log('ITEM DELETED FROM COLLECTION');
 
     const result = await BasketItem.deleteMany({ item: id });
     console.log(`BASKET ENTRIES DELETED: ${result.deletedCount}`);
+
+    // updated basket
+    const updatedBasket = await BasketItem.find().populate('item');
+    req.io.emit('basketUpdated', updatedBasket);
 
     res.status(200).json({ message: 'Item and basket entries deleted successfully' });
 
