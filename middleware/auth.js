@@ -9,7 +9,7 @@ async function authenticate(req, res, next) {
   const token = authHeader.split(' ')[1];
   try {
     const payload = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(payload.id).select('-password');  // <-- вот здесь исправление
+    const user = await User.findById(payload.id).select('-password');
     if (!user) throw 'no user';
     req.user = user;
     next();

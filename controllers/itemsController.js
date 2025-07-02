@@ -1,4 +1,3 @@
-// controllers/itemsController.js
 const Item = require('../models/Item');
 const BasketItem = require('../models/BasketItem');
 const mongoose = require('mongoose');

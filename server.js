@@ -1,4 +1,3 @@
-// server.js
 require('dotenv').config();
 const express  = require('express');
 const morgan   = require('morgan');
@@ -33,9 +32,9 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
-  .then(() => console.log('✅ MongoDB connected'))
+  .then(() => console.log('MongoDB connected'))
   .catch(err => {
-    console.error('❌ Mongo connection error:', err);
+    console.error('Mongo connection error:', err);
     process.exit(1);
   });
 
@@ -57,5 +56,5 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () =>
-  console.log(`✅ Backend running on http://localhost:${PORT}`)
+  console.log(`Backend running on http://localhost:${PORT}`)
 );
